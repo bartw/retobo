@@ -1,4 +1,5 @@
 const path = require('path');
+const url = require('url');
 const express = require('express');
 const WebSocket = require('ws');
 
@@ -16,13 +17,13 @@ app.post('/api/session', (req, res) => {
     }
     const port = 8081 + sessions.length;
     const users = [];
-    const socket = createSocket(port, users);
+    const hostname = url.parse(req.headers.origin).hostname;
+    const socket = createSocket(hostname, port, users);
     sessions.push({
         port: port,
         users: users,
         socket: socket
     });
-    console.log(port);
     res.status(200).json({ port: port });
 });
 
@@ -34,8 +35,8 @@ app.listen(PORT, () => {
     console.log('listening on ' + PORT);
 });
 
-function createSocket(port, users) {
-    const socket = new WebSocket.Server({ port: port });
+function createSocket(hostname, port, users) {
+    const socket = new WebSocket.Server({ host: hostname, port: port });
 
     socket.broadcast = (data) => {
         socket.clients.forEach((client) => {
