@@ -51,7 +51,7 @@ export default class App extends React.Component {
     }
 
     createSocketUrl(port) {
-        return 'ws://' + window.location.hostname + ':' + port;
+        return (process.env.NODE_ENV === 'production' ? 'wss://' : 'ws://') + window.location.hostname + ':' + port;
     }
 
     setNewSocket(socketUrl) {
