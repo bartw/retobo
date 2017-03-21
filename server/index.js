@@ -1,10 +1,12 @@
 const path = require('path');
 const url = require('url');
 const express = require('express');
+const http = require('http');
 const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 8080
 const app = express();
+const server = http.createServer(app);
 
 const sessions = [];
 
@@ -17,8 +19,7 @@ app.post('/api/session', (req, res) => {
     }
     const port = 8081 + sessions.length;
     const users = [];
-    const hostname = url.parse(req.headers.origin).hostname;
-    const socket = createSocket(hostname, port, users);
+    const socket = createSocket(users);
     sessions.push({
         port: port,
         users: users,
@@ -31,12 +32,12 @@ app.get('*', (req, res) => {
     return res.sendFile(path.join(__dirname, '..', 'public/index.html'));
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log('listening on ' + PORT);
 });
 
-function createSocket(hostname, port, users) {
-    const socket = new WebSocket.Server({ host: hostname, port: port });
+function createSocket(users) {
+    const socket = new WebSocket.Server({ server });
 
     socket.broadcast = (data) => {
         socket.clients.forEach((client) => {
