@@ -61,8 +61,12 @@ export default class App extends React.Component {
         };
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data && data.type === 'users' && data.users) {
-                this.setState({ users: data.users });
+            if (data) {
+                if (data.type === 'users' && data.users) {
+                    this.setState({ users: data.users });
+                } else if (data.type === 'identify' && data.user) {
+                    this.setState({ user: data.user });
+                }
             }
         };
         return socket;
@@ -77,15 +81,21 @@ export default class App extends React.Component {
     }
 
     render() {
-        const users = this.state.users.map(user => <li key={user}>{user}</li>);
+        const users = this.state.users.map(user => <li key={user.id}>{user.name} {this.state.user && this.state.user.id === user.id && <span>this is me!</span>}</li>);
         return (
             <div>
                 {!this.state.socket && <button onClick={this.createNewSession}>Create new session</button>}
                 {this.state.socket && (
                     <div>
-                        <input type="text" value={this.state.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
-                        <input type="text" value={this.state.name} onChange={this.changeName} />
-                        <button onClick={this.setName}>Go</button>
+                        <div>
+                            <input type="text" value={this.state.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
+                        </div>
+                        {!this.state.user && (
+                            <div>
+                                <input type="text" value={this.state.name} onChange={this.changeName} />
+                                <button onClick={this.setName}>Go</button>
+                            </div>
+                        )}
                         <ul>
                             {users}
                         </ul>

@@ -65,7 +65,14 @@ function createSocket(path, users) {
         ws.on('message', (message) => {
             const jsonMessage = JSON.parse(message);
             if (jsonMessage && jsonMessage.type === 'subscribe' && jsonMessage.name) {
-                users.push(jsonMessage.name);
+                const user = {
+                    id: createUid(),
+                    name: jsonMessage.name
+                };
+                users.push(user);
+
+                ws.send(JSON.stringify({ type: 'identify', user: user }));
+
                 socket.broadcast(JSON.stringify({
                     type: 'users',
                     users: users
