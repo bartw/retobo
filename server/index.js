@@ -71,7 +71,7 @@ function createSocket(path, users) {
                 };
                 users.push(user);
 
-                ws.send(JSON.stringify({ type: 'identify', user: user }));
+                ws.send(JSON.stringify({ type: 'identify', id: user.id }));
 
                 socket.broadcast(JSON.stringify({
                     type: 'users',

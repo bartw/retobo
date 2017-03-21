@@ -1,4 +1,5 @@
 import React from 'react';
+import UserList from './UserList';
 
 export default class App extends React.Component {
     constructor(props) {
@@ -64,8 +65,8 @@ export default class App extends React.Component {
             if (data) {
                 if (data.type === 'users' && data.users) {
                     this.setState({ users: data.users });
-                } else if (data.type === 'identify' && data.user) {
-                    this.setState({ user: data.user });
+                } else if (data.type === 'identify' && data.id) {
+                    this.setState({ currentUserId: data.id });
                 }
             }
         };
@@ -81,7 +82,6 @@ export default class App extends React.Component {
     }
 
     render() {
-        const users = this.state.users.map(user => <li key={user.id}>{user.name} {this.state.user && this.state.user.id === user.id && <span>this is me!</span>}</li>);
         return (
             <div>
                 {!this.state.socket && <button onClick={this.createNewSession}>Create new session</button>}
@@ -90,15 +90,13 @@ export default class App extends React.Component {
                         <div>
                             <input type="text" value={this.state.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
                         </div>
-                        {!this.state.user && (
+                        {!this.state.currentUserId && (
                             <div>
                                 <input type="text" value={this.state.name} onChange={this.changeName} />
                                 <button onClick={this.setName}>Go</button>
                             </div>
                         )}
-                        <ul>
-                            {users}
-                        </ul>
+                        <UserList users={this.state.users} currentUserId={this.state.currentUserId} />
                         <button onClick={this.closeSession}>Close session</button>
                     </div>
                 )}
