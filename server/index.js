@@ -17,15 +17,15 @@ app.post('/api/session', (req, res) => {
         res.status(500).json({ error: 'Limit of 5 sessions reached.' });
         return;
     }
-    const port = 8081 + sessions.length;
+    const uid = createUid();
     const users = [];
-    const socket = createSocket(port, users);
+    const socket = createSocket(uid, users);
     sessions.push({
-        port: port,
+        uid: uid,
         users: users,
         socket: socket
     });
-    res.status(200).json({ port: port });
+    res.status(200).json({ uid: uid });
 });
 
 app.get('*', (req, res) => {
@@ -38,7 +38,7 @@ server.listen(PORT, () => {
 
 server.on('upgrade', (request, socket, head) => {
     const pathname = url.parse(request.url).pathname;
-    const session = sessions.find(session => '/' + session.port === pathname);
+    const session = sessions.find(session => '/' + session.uid === pathname);
 
     if (!session) {
         socket.destroy();
@@ -80,4 +80,11 @@ function createSocket(path, users) {
     });
 
     return socket;
+}
+
+function createUid() {
+    return 'xxxx4xxxyxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }

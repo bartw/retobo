@@ -27,7 +27,7 @@ export default class App extends React.Component {
             })
             .then(responseText => {
                 const data = JSON.parse(responseText);
-                const socketUrl = this.createSocketUrl(data.port);
+                const socketUrl = this.createSocketUrl(data.uid);
                 this.setNewSocket(socketUrl);
             })
             .catch(error => {
@@ -50,8 +50,8 @@ export default class App extends React.Component {
         this.setState({ socketUrl: null, socket: null, users: [] });
     }
 
-    createSocketUrl(port) {
-        return location.origin.replace(/^https/, 'wss').replace(/^http/, 'ws') + '/' + port;
+    createSocketUrl(uid) {
+        return location.origin.replace(/^https/, 'wss').replace(/^http/, 'ws') + '/' + uid;
     }
 
     setNewSocket(socketUrl) {
@@ -70,8 +70,8 @@ export default class App extends React.Component {
 
     componentDidMount() {
         if (window.location.pathname && window.location.pathname.length > 1) {
-            const port = window.location.pathname.replace('/', '');
-            const socketUrl = this.createSocketUrl(port);
+            const uid = window.location.pathname.replace('/', '');
+            const socketUrl = this.createSocketUrl(uid);
             this.setNewSocket(socketUrl);
         }
     }
@@ -83,7 +83,7 @@ export default class App extends React.Component {
                 {!this.state.socket && <button onClick={this.createNewSession}>Create new session</button>}
                 {this.state.socket && (
                     <div>
-                        <input type="text" value={this.state.socketUrl} readOnly />
+                        <input type="text" value={this.state.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
                         <input type="text" value={this.state.name} onChange={this.changeName} />
                         <button onClick={this.setName}>Go</button>
                         <ul>
