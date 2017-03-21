@@ -51,7 +51,7 @@ export default class App extends React.Component {
     }
 
     createSocketUrl(port) {
-        return location.origin.replace(/^https/, 'wss').replace(/^http/, 'ws');
+        return location.origin.replace(/^https/, 'wss').replace(/^http/, 'ws') + '/' + port;
     }
 
     setNewSocket(socketUrl) {

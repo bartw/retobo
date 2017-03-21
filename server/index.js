@@ -19,7 +19,7 @@ app.post('/api/session', (req, res) => {
     }
     const port = 8081 + sessions.length;
     const users = [];
-    const socket = createSocket(users);
+    const socket = createSocket(port, users);
     sessions.push({
         port: port,
         users: users,
@@ -36,8 +36,22 @@ server.listen(PORT, () => {
     console.log('listening on ' + PORT);
 });
 
-function createSocket(users) {
-    const socket = new WebSocket.Server({ server });
+server.on('upgrade', (request, socket, head) => {
+    const pathname = url.parse(request.url).pathname;
+    const session = sessions.find(session => '/' + session.port === pathname);
+
+    if (!session) {
+        socket.destroy();
+        return;
+    }
+
+    session.socket.handleUpgrade(request, socket, head, (ws) => {
+        session.socket.emit('connection', ws);
+    });
+});
+
+function createSocket(path, users) {
+    const socket = new WebSocket.Server({ noServer: true });
 
     socket.broadcast = (data) => {
         socket.clients.forEach((client) => {
