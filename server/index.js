@@ -1,43 +1,47 @@
-const path = require('path');
-const url = require('url');
-const express = require('express');
-const http = require('http');
-const Session = require('./Session.js');
+(function () {
+    'use strict';
 
-const PORT = process.env.PORT || 8080
-const app = express();
-const server = http.createServer(app);
+    const path = require('path');
+    const url = require('url');
+    const express = require('express');
+    const http = require('http');
+    const Session = require('./Session.js');
 
-const sessions = [];
+    const PORT = process.env.PORT || 8080
+    const app = express();
+    const server = http.createServer(app);
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+    const sessions = [];
 
-app.post('/api/session', (req, res) => {
-    if (sessions.length === 5) {
-        res.status(500).json({ error: 'Limit of 5 sessions reached.' });
-        return;
-    }
-    const session = new Session();
-    sessions.push(session);
-    res.status(200).json({ uid: session.getUid() });
-});
+    app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.get('*', (req, res) => {
-    return res.sendFile(path.join(__dirname, '..', 'public/index.html'));
-});
+    app.post('/api/session', (req, res) => {
+        if (sessions.length === 5) {
+            res.status(500).json({ error: 'Limit of 5 sessions reached.' });
+            return;
+        }
+        const session = new Session();
+        sessions.push(session);
+        res.status(200).json({ uid: session.getUid() });
+    });
 
-server.listen(PORT, () => {
-    console.log('listening on ' + PORT);
-});
+    app.get('*', (req, res) => {
+        return res.sendFile(path.join(__dirname, '..', 'public/index.html'));
+    });
 
-server.on('upgrade', (request, socket, head) => {
-    const pathname = url.parse(request.url).pathname;
-    const session = sessions.find(session => session.getPathName() === pathname);
+    server.listen(PORT, () => {
+        console.log('listening on ' + PORT);
+    });
 
-    if (!session) {
-        socket.destroy();
-        return;
-    }
+    server.on('upgrade', (request, socket, head) => {
+        const pathname = url.parse(request.url).pathname;
+        const session = sessions.find(session => session.getPathName() === pathname);
 
-    session.handleUpgrade(request, socket, head);
-});
+        if (!session) {
+            socket.destroy();
+            return;
+        }
+
+        session.handleUpgrade(request, socket, head);
+    });
+})();

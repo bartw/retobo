@@ -1,8 +1,8 @@
 (function () {
     'use strict';
 
-    const generateUid = require('./uidGenerator.js');
     const WebSocket = require('ws');
+    const User = require('./User.js');
 
     const createSocket = (path, users) => {
         const socket = new WebSocket.Server({ noServer: true });
@@ -19,10 +19,7 @@
             ws.on('message', (message) => {
                 const jsonMessage = JSON.parse(message);
                 if (jsonMessage && jsonMessage.type === 'subscribe' && jsonMessage.name) {
-                    const user = {
-                        id: generateUid(),
-                        name: jsonMessage.name
-                    };
+                    const user = new User(jsonMessage.name);
                     users.push(user);
 
                     ws.send(JSON.stringify({ type: 'identify', id: user.id }));
