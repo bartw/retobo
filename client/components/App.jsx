@@ -1,22 +1,20 @@
 import React from 'react';
-import UserList from './UserList';
 import Socket from '../services/Socket';
 import Start from './Start';
+import Session from './Session';
 
 export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             socket: null,
-            name: '',
             users: []
         };
 
         this.createNewSession = this.createNewSession.bind(this);
-        this.changeName = this.changeName.bind(this);
-        this.setName = this.setName.bind(this);
         this.closeSession = this.closeSession.bind(this);
         this.setNewSocket = this.setNewSocket.bind(this);
+        this.setName = this.setName.bind(this);
     }
 
     createNewSession() {
@@ -37,18 +35,13 @@ export default class App extends React.Component {
             })
     }
 
-    changeName(e) {
-        this.setState({ name: e.target.value });
-    }
-
-    setName() {
-        this.state.socket.subscribe(this.state.name);
-        this.setState({ name: '' });
-    }
-
     closeSession() {
         this.state.socket.close();
         this.setState({ socket: null, users: [] });
+    }
+
+    setName(name) {
+        this.state.socket.subscribe(name);
     }
 
     setNewSocket(uid) {
@@ -77,21 +70,7 @@ export default class App extends React.Component {
         return (
             <div>
                 {!this.state.socket && <Start onCreateNewSession={this.createNewSession} />}
-                {this.state.socket && (
-                    <div>
-                        <div>
-                            <input type="text" value={this.state.socket.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
-                        </div>
-                        {!this.state.currentUserId && (
-                            <div>
-                                <input type="text" value={this.state.name} onChange={this.changeName} />
-                                <button onClick={this.setName}>Go</button>
-                            </div>
-                        )}
-                        <UserList users={this.state.users} currentUserId={this.state.currentUserId} />
-                        <button onClick={this.closeSession}>Close session</button>
-                    </div>
-                )}
+                {this.state.socket && <Session currentUserId={this.state.currentUserId} onSetName={this.setName} onClose={this.closeSession} url={this.state.socket.getUrl()} users={this.state.users} />}
             </div>
         );
     }

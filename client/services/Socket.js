@@ -10,6 +10,7 @@ export default class Socket {
 
         this.subscribe = this.subscribe.bind(this);
         this.close = this.close.bind(this);
+        this.getUrl = this.getUrl.bind(this);
 
         this.socketUrl = createSocketUrl(origin, uid);
         this.socket = new WebSocket(this.socketUrl);
@@ -37,6 +38,10 @@ export default class Socket {
 
     close() {
         this.socket.close();
+    }
+
+    getUrl() {
+        return this.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')
     }
 }
 
