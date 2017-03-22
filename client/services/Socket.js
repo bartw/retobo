@@ -33,7 +33,7 @@ export default class Socket {
     }
 
     subscribe(name) {
-        this.socket.send(JSON.stringify({ type: 'subscribe', name: name }));
+        this.socket.send(JSON.stringify({ type: 'subscribe', data: name }));
     }
 
     close() {
