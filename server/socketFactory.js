@@ -3,6 +3,7 @@
 
     const WebSocket = require('ws');
     const User = require('./User.js');
+    const messageFactory = require('./messageFactory.js');
 
     const createSocket = (path, users) => {
         const socket = new WebSocket.Server({ noServer: true });
@@ -21,20 +22,12 @@
                 if (jsonMessage && jsonMessage.type === 'subscribe' && jsonMessage.name) {
                     const user = new User(jsonMessage.name);
                     users.push(user);
-
-                    ws.send(JSON.stringify({ type: 'identify', id: user.id }));
-
-                    socket.broadcast(JSON.stringify({
-                        type: 'users',
-                        users: users
-                    }));
+                    ws.send(messageFactory.createMessage(messageFactory.types.identify, user.id));
+                    socket.broadcast(messageFactory.createMessage(messageFactory.types.users, users));
                 }
             });
 
-            socket.broadcast(JSON.stringify({
-                type: 'users',
-                users: users
-            }));
+            socket.broadcast(messageFactory.createMessage(messageFactory.types.users, users));
         });
 
         return socket;

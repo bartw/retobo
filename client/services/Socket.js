@@ -20,13 +20,13 @@ export default class Socket {
         };
 
         this.socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data) {
-                if (data.type === 'identify' && data.id) {
-                    onIdentify(data.id);
+            const message = JSON.parse(event.data);
+            if (message) {
+                if (message.type === 'identify' && message.data) {
+                    onIdentify(message.data);
                 }
-                if (data.type === 'users' && data.users) {
-                    onUsers(data.users);
+                if (message.type === 'users' && message.data) {
+                    onUsers(message.data);
                 }
             }
         };
