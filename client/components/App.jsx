@@ -1,6 +1,7 @@
 import React from 'react';
 import UserList from './UserList';
 import Socket from '../services/Socket';
+import Start from './Start';
 
 export default class App extends React.Component {
     constructor(props) {
@@ -75,7 +76,7 @@ export default class App extends React.Component {
     render() {
         return (
             <div>
-                {!this.state.socket && <button onClick={this.createNewSession}>Create new session</button>}
+                {!this.state.socket && <Start onCreateNewSession={this.createNewSession} />}
                 {this.state.socket && (
                     <div>
                         <div>
