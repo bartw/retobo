@@ -15,7 +15,6 @@ export default class App extends React.Component {
         this.changeName = this.changeName.bind(this);
         this.setName = this.setName.bind(this);
         this.closeSession = this.closeSession.bind(this);
-        this.createSocketUrl = this.createSocketUrl.bind(this);
         this.setNewSocket = this.setNewSocket.bind(this);
     }
 
@@ -48,19 +47,15 @@ export default class App extends React.Component {
 
     closeSession() {
         this.state.socket.close();
-        this.setState({ socketUrl: null, socket: null, users: [] });
-    }
-
-    createSocketUrl(uid) {
-        return location.origin.replace(/^https/, 'wss').replace(/^http/, 'ws') + '/' + uid;
+        this.setState({ socket: null, users: [] });
     }
 
     setNewSocket(uid) {
         new Socket(
             uid,
             window.location.origin,
-            (socketUrl, socket) => {
-                this.setState({ socketUrl: socketUrl, socket: socket })
+            (socket) => {
+                this.setState({ socket: socket })
             },
             id => {
                 this.setState({ currentUserId: id })
@@ -84,7 +79,7 @@ export default class App extends React.Component {
                 {this.state.socket && (
                     <div>
                         <div>
-                            <input type="text" value={this.state.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
+                            <input type="text" value={this.state.socket.socketUrl.replace(/^wss/, 'https').replace(/^ws/, 'http')} readOnly />
                         </div>
                         {!this.state.currentUserId && (
                             <div>

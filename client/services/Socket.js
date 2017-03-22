@@ -15,7 +15,7 @@ export default class Socket {
         this.socket = new WebSocket(this.socketUrl);
 
         this.socket.onopen = () => {
-            onOpen(this.socketUrl, this);
+            onOpen(this);
         };
 
         this.socket.onmessage = (event) => {
