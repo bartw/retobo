@@ -3,6 +3,7 @@ const url = require('url');
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
+const generateUid = require('./uidGenerator.js');
 
 const PORT = process.env.PORT || 8080
 const app = express();
@@ -17,7 +18,7 @@ app.post('/api/session', (req, res) => {
         res.status(500).json({ error: 'Limit of 5 sessions reached.' });
         return;
     }
-    const uid = createUid();
+    const uid = generateUid();
     const users = [];
     const socket = createSocket(uid, users);
     sessions.push({
@@ -66,7 +67,7 @@ function createSocket(path, users) {
             const jsonMessage = JSON.parse(message);
             if (jsonMessage && jsonMessage.type === 'subscribe' && jsonMessage.name) {
                 const user = {
-                    id: createUid(),
+                    id: generateUid(),
                     name: jsonMessage.name
                 };
                 users.push(user);
@@ -87,11 +88,4 @@ function createSocket(path, users) {
     });
 
     return socket;
-}
-
-function createUid() {
-    return 'xxxx4xxxyxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
 }
