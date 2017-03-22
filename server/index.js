@@ -2,8 +2,7 @@ const path = require('path');
 const url = require('url');
 const express = require('express');
 const http = require('http');
-const WebSocket = require('ws');
-const generateUid = require('./uidGenerator.js');
+const Session = require('./Session.js');
 
 const PORT = process.env.PORT || 8080
 const app = express();
@@ -18,15 +17,9 @@ app.post('/api/session', (req, res) => {
         res.status(500).json({ error: 'Limit of 5 sessions reached.' });
         return;
     }
-    const uid = generateUid();
-    const users = [];
-    const socket = createSocket(uid, users);
-    sessions.push({
-        uid: uid,
-        users: users,
-        socket: socket
-    });
-    res.status(200).json({ uid: uid });
+    const session = new Session();
+    sessions.push(session);
+    res.status(200).json({ uid: session.getUid() });
 });
 
 app.get('*', (req, res) => {
@@ -39,53 +32,12 @@ server.listen(PORT, () => {
 
 server.on('upgrade', (request, socket, head) => {
     const pathname = url.parse(request.url).pathname;
-    const session = sessions.find(session => '/' + session.uid === pathname);
+    const session = sessions.find(session => session.getPathName() === pathname);
 
     if (!session) {
         socket.destroy();
         return;
     }
 
-    session.socket.handleUpgrade(request, socket, head, (ws) => {
-        session.socket.emit('connection', ws);
-    });
+    session.handleUpgrade(request, socket, head);
 });
-
-function createSocket(path, users) {
-    const socket = new WebSocket.Server({ noServer: true });
-
-    socket.broadcast = (data) => {
-        socket.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(data);
-            }
-        });
-    };
-
-    socket.on('connection', (ws) => {
-        ws.on('message', (message) => {
-            const jsonMessage = JSON.parse(message);
-            if (jsonMessage && jsonMessage.type === 'subscribe' && jsonMessage.name) {
-                const user = {
-                    id: generateUid(),
-                    name: jsonMessage.name
-                };
-                users.push(user);
-
-                ws.send(JSON.stringify({ type: 'identify', id: user.id }));
-
-                socket.broadcast(JSON.stringify({
-                    type: 'users',
-                    users: users
-                }));
-            }
-        });
-
-        socket.broadcast(JSON.stringify({
-            type: 'users',
-            users: users
-        }));
-    });
-
-    return socket;
-}
