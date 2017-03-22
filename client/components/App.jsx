@@ -1,5 +1,6 @@
 import React from 'react';
 import UserList from './UserList';
+import Socket from '../services/Socket';
 
 export default class App extends React.Component {
     constructor(props) {
@@ -28,12 +29,11 @@ export default class App extends React.Component {
             })
             .then(responseText => {
                 const data = JSON.parse(responseText);
-                const socketUrl = this.createSocketUrl(data.uid);
-                this.setNewSocket(socketUrl);
+                this.setNewSocket(data.uid);
             })
             .catch(error => {
                 console.log(error.message);
-                this.setState({ socketUrl: null, socket: null, users: [] });
+                this.setState({ socket: null, users: [] });
             })
     }
 
@@ -42,7 +42,7 @@ export default class App extends React.Component {
     }
 
     setName() {
-        this.state.socket.send(JSON.stringify({ type: 'subscribe', name: this.state.name }));
+        this.state.socket.subscribe(this.state.name);
         this.setState({ name: '' });
     }
 
@@ -55,29 +55,25 @@ export default class App extends React.Component {
         return location.origin.replace(/^https/, 'wss').replace(/^http/, 'ws') + '/' + uid;
     }
 
-    setNewSocket(socketUrl) {
-        const socket = new WebSocket(socketUrl);
-        socket.onopen = () => {
-            this.setState({ socketUrl: socketUrl, socket: socket });
-        };
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data) {
-                if (data.type === 'users' && data.users) {
-                    this.setState({ users: data.users });
-                } else if (data.type === 'identify' && data.id) {
-                    this.setState({ currentUserId: data.id });
-                }
-            }
-        };
-        return socket;
+    setNewSocket(uid) {
+        new Socket(
+            uid,
+            window.location.origin,
+            (socketUrl, socket) => {
+                this.setState({ socketUrl: socketUrl, socket: socket })
+            },
+            id => {
+                this.setState({ currentUserId: id })
+            },
+            users => {
+                this.setState({ users: users });
+            });
     };
 
     componentDidMount() {
         if (window.location.pathname && window.location.pathname.length > 1) {
             const uid = window.location.pathname.replace('/', '');
-            const socketUrl = this.createSocketUrl(uid);
-            this.setNewSocket(socketUrl);
+            this.setNewSocket(uid);
         }
     }
 
